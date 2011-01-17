@@ -36,26 +36,32 @@ class SVGImageDrawElement:
 
         return color
 
+    def filter(self, name):
+        if name == 'blur':
+            filter = "filter:url(#filter_blur)"
+        elif name == 'transp-blur':
+            filter = "filter:url(#filter_blur);opacity:0.7;fill-opacity:1"
+        else:
+            filter = None
+
+        return filter
+
+    def style(self, name):
+        if name == 'dotted':
+            length = 2
+        elif name == 'dashed':
+            length = 4
+        else:
+            length = None
+
+        return length
+
     def rectangle(self, box, **kwargs):
         thick = kwargs.get('width', 1)
         fill = kwargs.get('fill', 'none')
         outline = kwargs.get('outline')
         style = kwargs.get('style')
         filter = kwargs.get('filter')
-
-        if style == 'dotted':
-            length = 2
-        elif style == 'dashed':
-            length = 4
-        else:
-            length = None
-
-        if filter == 'blur':
-            filter = "filter:url(#filter_blur)"
-        elif filter == 'transp-blur':
-            filter = "filter:url(#filter_blur);opacity:0.7;fill-opacity:1"
-        else:
-            filter = None
 
         x = box[0]
         y = box[1]
@@ -64,7 +70,8 @@ class SVGImageDrawElement:
 
         r = rect(x, y, width, height, fill=self.rgb(fill),
                  stroke=self.rgb(outline), stroke_width=thick,
-                 stroke_dasharray=length, style=filter)
+                 stroke_dasharray=self.style(style),
+                 style=self.filter(filter))
         self.svg.addElement(r)
 
     def label(self, box, string, **kwargs):
@@ -90,31 +97,17 @@ class SVGImageDrawElement:
         fill = kwargs.get('fill')
         style = kwargs.get('style')
 
-        if style == 'dotted':
-            length = 2
-        elif style == 'dashed':
-            length = 4
-        else:
-            length = None
-
         pd = pathdata(xy[0].x, xy[0].y)
         for pt in xy[1:]:
             pd.line(pt.x, pt.y)
 
         p = path(pd, fill="none", stroke=self.rgb(fill),
-                 stroke_dasharray=length)
+                 stroke_dasharray=self.style(style))
         self.svg.addElement(p)
 
     def arc(self, xy, start, end, **kwargs):
         fill = kwargs.get('fill')
         style = kwargs.get('style')
-
-        if style == 'dotted':
-            length = 2
-        elif style == 'dashed':
-            length = 4
-        else:
-            length = None
 
         w = (xy[2] - xy[0]) / 2
         h = (xy[3] - xy[1]) / 2
@@ -124,27 +117,32 @@ class SVGImageDrawElement:
         pd = pathdata(pt1.x, pt1.y)
         pd.ellarc(w, h, 0, 0, 1, pt2.x, pt2.y)
         p = path(pd, fill="none", stroke=self.rgb(fill),
-                 stroke_dasharray=length)
+                 stroke_dasharray=self.style(style))
         self.svg.addElement(p)
 
     def ellipse(self, xy, **kwargs):
         fill = kwargs.get('fill')
         outline = kwargs.get('outline')
+        filter = kwargs.get('filter')
 
         w = (xy[2] - xy[0]) / 2
         h = (xy[3] - xy[1]) / 2
         pt = XY(xy[0] + w, xy[1] + h)
 
         e = ellipse(pt.x, pt.y, w, h, fill=self.rgb(fill),
-                    stroke=self.rgb(outline))
+                    stroke=self.rgb(outline), style=self.filter(filter))
         self.svg.addElement(e)
 
     def polygon(self, xy, **kwargs):
         fill = kwargs.get('fill')
         outline = kwargs.get('outline')
+        style = kwargs.get('style')
+        filter = kwargs.get('filter')
 
         points = [[p[0], p[1]] for p in xy]
-        pg = polygon(points, fill=self.rgb(fill), stroke=self.rgb(outline))
+        pg = polygon(points, fill=self.rgb(fill), stroke=self.rgb(outline),
+                     stroke_dasharray=self.style(style),
+                     style=self.filter(filter))
         self.svg.addElement(pg)
 
     def loadImage(self, filename, box):

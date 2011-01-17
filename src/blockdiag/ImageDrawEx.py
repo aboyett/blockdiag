@@ -112,6 +112,45 @@ class ImageDrawEx(ImageDraw.ImageDraw):
         else:
             ImageDraw.ImageDraw.arc(self, box, start, end, **kwargs)
 
+    def ellipse(self, box, **kwargs):
+        if 'filter' in kwargs:
+            del kwargs['filter']
+
+        style = kwargs.get('style')
+        if 'style' in kwargs:
+            del kwargs['style']
+
+        if style:
+            if 'fill' in kwargs:
+                kwargs2 = dict(kwargs)
+                if 'outline' in kwargs2:
+                    del kwargs2['outline']
+                ImageDraw.ImageDraw.ellipse(self, box, **kwargs2)
+
+            if 'outline' in kwargs:
+                kwargs['fill'] = kwargs['outline']
+                del kwargs['outline']
+
+            if style == 'dotted':
+                length = 48
+            elif style == 'dashed':
+                length = 24
+
+            start = 0
+            end = 360
+            diff = (end - start) / length
+
+            for i in range(length):
+                s = start + diff * (i * 2)
+                e = start + diff * (i * 2 + 1)
+
+                if e > end:
+                    continue
+
+                ImageDraw.ImageDraw.arc(self, box, s, e, **kwargs)
+        else:
+            ImageDraw.ImageDraw.ellipse(self, box, **kwargs)
+
     def line(self, xy, **kwargs):
         style = kwargs.get('style')
 
@@ -156,6 +195,24 @@ class ImageDrawEx(ImageDraw.ImageDraw):
 
         for line in lines:
             self.line(line, fill=outline, width=thick, style=style)
+
+    def polygon(self, xy, **kwargs):
+        if 'filter' in kwargs:
+            del kwargs['filter']
+
+        if kwargs.get('fill') != 'none':
+            kwargs2 = dict(kwargs)
+
+            if 'style' in kwargs2:
+                del kwargs2['style']
+            if 'outline' in kwargs2:
+                del kwargs2['outline']
+            ImageDraw.ImageDraw.polygon(self, xy, **kwargs)
+
+        if kwargs.get('outline'):
+            kwargs['fill'] = kwargs['outline']
+            del kwargs['outline']
+            self.line(xy, **kwargs)
 
     def label(self, box, string, **kwargs):
         lines = TextFolder(box, string, adjustBaseline=True, **kwargs)
