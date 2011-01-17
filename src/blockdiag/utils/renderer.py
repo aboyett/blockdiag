@@ -10,9 +10,5 @@ def shift_box(box, x, y):
     return shifted
 
 
-def shift_points(points, x, y):
-    shifted = []
-    for pt in points:
-        shifted.append(XY(pt[0] + x, pt[1] + y))
-
-    return shifted
+def shift_polygon(polygon, x, y):
+    return (XY(p[0] + x, p[1] + y) for p in polygon)
