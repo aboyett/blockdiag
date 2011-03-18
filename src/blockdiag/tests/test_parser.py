@@ -10,6 +10,7 @@ from nose.tools import assert_raises
 def __build_diagram(filename):
     DiagramNode.clear()
     DiagramEdge.clear()
+    NodeGroup.clear()
 
     import os
     testdir = os.path.dirname(__file__)
@@ -398,6 +399,14 @@ def test_empty_nested_group_diagram():
     screen = __build_diagram('empty_nested_group.diag')
 
     assert_pos = {'Z': (0, 0)}
+    for node in (x for x in screen.nodes if x.drawable):
+        assert node.xy == assert_pos[node.id]
+
+
+def test_empty_group_declaration_diagram():
+    screen = __build_diagram('empty_group_declaration.diag')
+
+    assert_pos = {'A': (0, 0), 'Z': (0, 1)}
     for node in (x for x in screen.nodes if x.drawable):
         assert node.xy == assert_pos[node.id]
 
