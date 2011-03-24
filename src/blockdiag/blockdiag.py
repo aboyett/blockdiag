@@ -136,8 +136,9 @@ class DiagramLayoutManager:
         self.coordinates = []
 
     def run(self):
-        for group in self.diagram.traverse_groups():
-            self.__class__(group).run()
+        if isinstance(self.diagram, Diagram):
+            for group in self.diagram.traverse_groups():
+                self.__class__(group).run()
 
         self.edges = DiagramEdge.find_by_level(self.diagram.level)
         self.do_layout()
@@ -150,6 +151,12 @@ class DiagramLayoutManager:
         for node in self.diagram.traverse_nodes():
             node.xy = XY(node.xy.y, node.xy.x)
             node.width, node.height = (node.height, node.width)
+
+            if isinstance(node, NodeGroup):
+                if node.orientation == 'portrait':
+                    node.orientation = 'landscape'
+                else:
+                    node.orientation = 'portrait'
 
         xy = (self.diagram.height, self.diagram.width)
         self.diagram.width, self.diagram.height = xy
