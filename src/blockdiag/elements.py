@@ -204,6 +204,7 @@ class DiagramNode(Element):
         self.description = None
         self.rotate = 0
         self.drawable = True
+        self.href = None
 
         plugins.fire_node_event(self, 'created')
 
@@ -270,6 +271,7 @@ class NodeGroup(Element):
         self.edges = []
         self.icon = None
         self.orientation = 'landscape'
+        self.href = None
 
     def duplicate(self):
         copied = super(NodeGroup, self).duplicate()

@@ -27,7 +27,7 @@ feGaussianBlur = svgclass('feGaussianBlur')
 
 
 class SVGImageDrawElement(object):
-    self_generative_methods = ['group']
+    self_generative_methods = ['group', 'anchor']
 
     def __init__(self, svg, parent=None):
         self.svg = svg
@@ -230,6 +230,13 @@ class SVGImageDrawElement(object):
 
         im = image(url, x, y, w, h)
         self.svg.addElement(im)
+
+    def anchor(self, url):
+        a_node = a(url)
+        a_node.add_attribute('xlink:href', url)
+        self.svg.addElement(a_node)
+
+        return SVGImageDrawElement(a_node)
 
     def group(self):
         group = g()

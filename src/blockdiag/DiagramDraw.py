@@ -105,7 +105,12 @@ class DiagramDraw(object):
         for group in self.groups:
             if group.shape == 'box':
                 box = self.metrics.group(group).marginbox
-                self.drawer.rectangle(box, fill=group.color, filter='blur')
+                if group.href and self.format == 'SVG':
+                    drawer = self.drawer.anchor(group.href)
+                else:
+                    drawer = self.drawer
+
+                drawer.rectangle(box, fill=group.color, filter='blur')
 
         # Drop node shadows.
         for node in self.nodes:
@@ -113,7 +118,12 @@ class DiagramDraw(object):
                 r = noderenderer.get(node.shape)
 
                 shape = r(node, self.metrics)
-                shape.render(self.drawer, self.format,
+                if node.href and self.format == 'SVG':
+                    drawer = self.drawer.anchor(node.href)
+                else:
+                    drawer = self.drawer
+
+                shape.render(drawer, self.format,
                              fill=self.shadow, shadow=True)
 
     def _draw_elements(self, **kwargs):
@@ -135,7 +145,12 @@ class DiagramDraw(object):
     def node(self, node, **kwargs):
         r = noderenderer.get(node.shape)
         shape = r(node, self.metrics)
-        shape.render(self.drawer, self.format, fill=self.fill,
+        if node.href and self.format == 'SVG':
+            drawer = self.drawer.anchor(node.href)
+        else:
+            drawer = self.drawer
+
+        shape.render(drawer, self.format, fill=self.fill,
                      badgeFill=self.badgeFill)
 
     def group_label(self, group):
