@@ -16,6 +16,7 @@
 from blockdiag import imagedraw, noderenderer
 from blockdiag.metrics import AutoScaler, DiagramMetrics
 from blockdiag.utils.collections import defaultdict
+from blockdiag.utils import XY
 
 
 class DiagramDraw(object):
@@ -162,15 +163,78 @@ class DiagramDraw(object):
     def edge(self, edge):
         metrics = self.metrics.edge(edge)
 
+        radius = edge.radius if edge.radius is not None else \
+                 self.diagram.edge_radius
+
         for line in metrics.shaft.polylines:
-            self.drawer.line(line, fill=edge.color, thick=edge.thick,
-                             style=edge.style, jump=True)
+            self.line(self.drawer, line, radius, fill=edge.color,
+                      thick=edge.thick, style=edge.style, jump=True)
 
         for head in metrics.heads:
             if edge.hstyle in ('generalization', 'aggregation'):
                 self.drawer.polygon(head, outline=edge.color, fill='white')
             else:
                 self.drawer.polygon(head, outline=edge.color, fill=edge.color)
+
+    @staticmethod
+    def line(drawer, line, radius, **kwargs):
+        if radius <= 0 or len(line) <= 2:
+            drawer.line(line, **kwargs)
+            return
+
+        if "jump" in kwargs:
+            kwarc = kwargs.copy()
+            del(kwarc["jump"])
+        else:
+            kwarc = kwargs
+
+        sign = lambda n:0 if n==0 else (1 if n>0 else -1)
+        def get_vector(p1, p2):
+            # Return tuple represents vector of p1->p2
+            #    [0:1] Unit vector
+            #    [2]   Length
+            #    [3]   Direction("u"p, "d"own, "f"orward, "b"ackward)
+            # p1, p2 must be XY
+            v1, v2 = p2.x-p1.x, p2.y-p1.y
+            if v1 == 0:
+                return 0, sign(v2), abs(v2), "d" if v2>0 else "u"
+            elif v2 == 0:
+                return sign(v1), 0, abs(v1), "f" if v1>0 else "b"
+            else: # Irregular :Neither horizontal nor vertical
+                return 0, 0, 0, "?"
+
+        st, ed = line[:2]
+        for next in line[2:]:
+            v1, v2 = get_vector(st, ed), get_vector(ed, next)
+            rad = min(v1[2], v2[2], radius)
+            if rad == 0:
+                drawer.line((st, ed), **kwargs)
+                st = ed
+            else:
+                # Draw streight line.
+                ed2 = ed.shift(rad * v1[0] * -1, rad * v1[1] * -1)
+                drawer.line((st, ed2), **kwargs)
+
+                # Draw quater arc
+                box = list(ed) * 2
+                if v1[3]=="f" or v2[3]=="b":    box[0] -= 2*rad
+                else:                           box[2] += 2*rad
+                if v1[3]=="d" or v2[3]=="u":    box[1] -= 2*rad
+                else:                           box[3] += 2*rad
+
+                dir = v1[3] + v2[3]
+                if dir in ("db", "fu"):     r1, r2 = 0, 90
+                elif dir in ("bu", "df"):   r1, r2 = 90, 180
+                elif dir in ("uf", "bd"):   r1, r2 = 180, 270
+                else:                       r1, r2 = 270, 360
+
+                drawer.arc(box, r1, r2, **kwarc)
+
+                st = ed.shift(rad * v2[0], rad * v2[1])
+            ed = next
+
+        # Draw last streight line
+        drawer.line((st, ed), **kwargs)
 
     def edge_label(self, edge):
         if edge.label:
