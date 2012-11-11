@@ -163,8 +163,8 @@ class DiagramDraw(object):
     def edge(self, edge):
         metrics = self.metrics.edge(edge)
 
-        radius = edge.radius if edge.radius is not None else \
-                 self.diagram.edge_radius
+        radius = (edge.radius if edge.radius is not None else
+                  self.diagram.edge_radius)
 
         for line in metrics.shaft.polylines:
             self.line(self.drawer, line, radius, fill=edge.color,
@@ -188,19 +188,20 @@ class DiagramDraw(object):
         else:
             kwarc = kwargs
 
-        sign = lambda n:0 if n==0 else (1 if n>0 else -1)
+        sign = lambda n: 0 if n == 0 else (1 if n > 0 else -1)
+
         def get_vector(p1, p2):
             # Return tuple represents vector of p1->p2
             #    [0:1] Unit vector
             #    [2]   Length
             #    [3]   Direction("u"p, "d"own, "f"orward, "b"ackward)
             # p1, p2 must be XY
-            v1, v2 = p2.x-p1.x, p2.y-p1.y
+            v1, v2 = p2.x - p1.x, p2.y - p1.y
             if v1 == 0:
-                return 0, sign(v2), abs(v2), "d" if v2>0 else "u"
+                return 0, sign(v2), abs(v2), "d" if v2 > 0 else "u"
             elif v2 == 0:
-                return sign(v1), 0, abs(v1), "f" if v1>0 else "b"
-            else: # Irregular :Neither horizontal nor vertical
+                return sign(v1), 0, abs(v1), "f" if v1 > 0 else "b"
+            else:   # Irregular :Neither horizontal nor vertical
                 return 0, 0, 0, "?"
 
         st, ed = line[:2]
@@ -217,16 +218,24 @@ class DiagramDraw(object):
 
                 # Draw quater arc
                 box = list(ed) * 2
-                if v1[3]=="f" or v2[3]=="b":    box[0] -= 2*rad
-                else:                           box[2] += 2*rad
-                if v1[3]=="d" or v2[3]=="u":    box[1] -= 2*rad
-                else:                           box[3] += 2*rad
+                if v1[3] == "f" or v2[3] == "b":
+                    box[0] -= 2 * rad
+                else:
+                    box[2] += 2 * rad
+                if v1[3] == "d" or v2[3] == "u":
+                    box[1] -= 2 * rad
+                else:
+                    box[3] += 2 * rad
 
                 dir = v1[3] + v2[3]
-                if dir in ("db", "fu"):     r1, r2 = 0, 90
-                elif dir in ("bu", "df"):   r1, r2 = 90, 180
-                elif dir in ("uf", "bd"):   r1, r2 = 180, 270
-                else:                       r1, r2 = 270, 360
+                if dir in ("db", "fu"):
+                    r1, r2 = 0, 90
+                elif dir in ("bu", "df"):
+                    r1, r2 = 90, 180
+                elif dir in ("uf", "bd"):
+                    r1, r2 = 180, 270
+                else:
+                    r1, r2 = 270, 360
 
                 drawer.arc(box, r1, r2, **kwarc)
 
