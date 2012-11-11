@@ -371,6 +371,8 @@ class DiagramEdge(Base):
     basecolor = (0, 0, 0)
     namespace = {}
 
+    int_attrs = Base.int_attrs + ['radius']
+
     @classmethod
     def get(cls, node1, node2):
         if node1 not in cls.namespace:
@@ -459,6 +461,7 @@ class DiagramEdge(Base):
         self.hstyle = None
         self.folded = None
         self.thick = None
+        self.radius = None
 
     def __repr__(self):
         _format = "<%s '%s' %s - '%s' %s at 0x%08x>"
@@ -566,7 +569,8 @@ class Diagram(NodeGroup):
     shadow_style = 'blur'
     linecolor = (0, 0, 0)
     int_attrs = (NodeGroup.int_attrs +
-                 ['node_width', 'node_height', 'span_width', 'span_height'])
+                 ['node_width', 'node_height', 'span_width', 'span_height',
+                  'edge_radius'])
 
     @classmethod
     def clear(cls):
@@ -584,6 +588,7 @@ class Diagram(NodeGroup):
         self.span_height = None
         self.page_padding = None
         self.edge_layout = None
+        self.edge_radius = 0
 
     def set_plugin(self, name, attrs):
         try:
