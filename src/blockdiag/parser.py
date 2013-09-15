@@ -61,14 +61,14 @@ class ParseException(Exception):
 
 
 def tokenize(string):
-    'str -> Sequence(Token)'
+    """str -> Sequence(Token)"""
     specs = [
         ('Comment', (r'/\*(.|[\r\n])*?\*/', MULTILINE)),
         ('Comment', (r'(//|#).*',)),
         ('NL',      (r'[\r\n]+',)),
         ('Space',   (r'[ \t\r\n]+',)),
-        ('Name',    (ur'[A-Za-z_0-9\u0080-\uffff]'
-                     ur'[A-Za-z_\-.0-9\u0080-\uffff]*',)),
+        ('Name',    (u'[A-Za-z_0-9\u0080-\uffff]'
+                     u'[A-Za-z_\\-.0-9\u0080-\uffff]*',)),
         ('Op',      (r'[{};,=\[\]]|(<->)|(<-)|(--)|(->)|(>-<)|(-<)|(>-)',)),
         ('Number',  (r'-?(\.[0-9]+)|([0-9]+(\.[0-9]*)?)',)),
         ('String',  (r'(?P<quote>"|\').*?(?<!\\)(?P=quote)', DOTALL)),
@@ -79,7 +79,7 @@ def tokenize(string):
 
 
 def parse(seq):
-    'Sequence(Token) -> object'
+    """Sequence(Token) -> object"""
     unarg = lambda f: lambda args: f(*args)
     tokval = lambda x: x.value
     flatten = lambda list: sum(list, [])
@@ -194,11 +194,11 @@ def sort_tree(tree):
         else:
             return 2
 
-    def compare(a, b):
-        return cmp(weight(a), weight(b))
+    def keyfunction(item):
+        return weight(item)
 
     if hasattr(tree, 'stmts'):
-        tree.stmts.sort(compare)
+        tree.stmts.sort(key=keyfunction)
         for stmt in tree.stmts:
             sort_tree(stmt)
 
@@ -209,10 +209,10 @@ def parse_string(string):
     try:
         tree = parse(tokenize(string))
         return sort_tree(tree)
-    except LexerError, e:
+    except LexerError as e:
         message = "Got unexpected token at line %d column %d" % e.place
         raise ParseException(message)
-    except Exception, e:
+    except Exception as e:
         raise ParseException(str(e))
 
 
