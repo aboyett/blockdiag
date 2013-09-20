@@ -13,6 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+from __future__ import division
+import sys
+if sys.version_info[0] == 2:
+    range = xrange
 import re
 import math
 from itertools import tee
@@ -44,14 +48,14 @@ def point_pairs(xylist):
     iterable = iter(xylist)
     for pt in iterable:
         if isinstance(pt, int):
-            yield (pt, iterable.next())
+            yield (pt, next(iterable))
         else:
             yield pt
 
 
 def line_segments(xylist):
     p1, p2 = tee(point_pairs(xylist))
-    p2.next()
+    next(p2)
     return zip(p1, p2)
 
 
@@ -61,7 +65,7 @@ def dashize_line(line, length):
         if pt1[1] > pt2[1]:
             pt2, pt1 = line
 
-        r = stepslice(xrange(pt1[1], pt2[1]), length)
+        r = stepslice(range(pt1[1], pt2[1]), length)
         for y1, y2 in istep(n for n in r):
             yield [(pt1[0], y1), (pt1[0], y2)]
 
@@ -69,7 +73,7 @@ def dashize_line(line, length):
         if pt1[0] > pt2[0]:
             pt2, pt1 = line
 
-        r = stepslice(xrange(pt1[0], pt2[0]), length)
+        r = stepslice(range(pt1[0], pt2[0]), length)
         for x1, x2 in istep(n for n in r):
             yield [(x1, pt1[1]), (x2, pt1[1])]
     else:  # diagonal
@@ -382,12 +386,12 @@ class ImageDrawExBase(base.ImageDraw):
         # centering image.
         w, h = image.size
         if box.width > w:
-            x = box[0] + (box.width - w) / 2
+            x = box[0] + (box.width - w) // 2
         else:
             x = box[0]
 
         if box.height > h:
-            y = box[1] + (box.height - h) / 2
+            y = box[1] + (box.height - h) // 2
         else:
             y = box[1]
 
